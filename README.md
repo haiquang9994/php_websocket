@@ -1,0 +1,4 @@
+# Run
+```
+php server.php
+```
