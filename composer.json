@@ -1,11 +1,20 @@
 {
+    "name": "lpks/php_websocket",
+    "description": "Websocket like SocketIO for PHP language.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nguyễn Hải Quang",
+            "email": "haiquang9994@gmail.com"
+        }
+    ],
     "require": {
-        "cboden/ratchet": "^0.4.3",
-        "symfony/var-dumper": "^5.1"
+        "cboden/ratchet": "^0.4.3"
     },
     "autoload": {
         "psr-4": {
-            "MyWebsocket\\": "src/"
+            "PHPWebsocket\\": "src/"
         }
     }
 }

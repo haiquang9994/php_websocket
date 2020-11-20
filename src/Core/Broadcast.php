@@ -1,6 +1,6 @@
 <?php
 
-namespace MyWebsocket\Core;
+namespace PHPWebsocket\Core;
 
 class Broadcast
 {

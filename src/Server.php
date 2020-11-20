@@ -1,8 +1,8 @@
 <?php
 
-namespace MyWebsocket;
+namespace PHPWebsocket;
 
-use MyWebsocket\Core\RatchatClient;
+use PHPWebsocket\Core\RatchatClient;
 use Ratchet\App;
 
 class Server
