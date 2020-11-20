@@ -12,11 +12,6 @@ class Socket
     protected $conn;
 
     /**
-     * @var RatchatClient
-     */
-    protected $client;
-
-    /**
      * @var array
      */
     protected $events = [];
@@ -29,7 +24,6 @@ class Socket
     public function __construct(ConnectionInterface $conn, RatchatClient $client)
     {
         $this->conn = $conn;
-        $this->client = $client;
         $this->broadcast = new Broadcast($client, $this);
     }
 
