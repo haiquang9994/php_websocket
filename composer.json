@@ -1,5 +1,5 @@
 {
-    "name": "lpks/php_websocket",
+    "name": "lpks/php-websocket",
     "description": "Websocket like SocketIO for PHP language.",
     "type": "library",
     "license": "MIT",
