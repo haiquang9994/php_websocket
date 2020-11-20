@@ -4,8 +4,14 @@ namespace PHPWebsocket\Core;
 
 class Broadcast
 {
+    /**
+     * @var RatchatClient
+     */
     protected $client;
 
+    /**
+     * @var Socket
+     */
     protected $socket;
 
     public function __construct(RatchatClient $client, Socket $socket)
@@ -24,7 +30,7 @@ class Broadcast
         }
     }
 
-    public function to(string $toId)
+    public function to(string $toId): SocketTo
     {
         $sockets = $this->client->sockets();
         $socketTo = new SocketTo();

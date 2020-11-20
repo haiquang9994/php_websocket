@@ -7,8 +7,14 @@ use Ratchet\App;
 
 class Server
 {
+    /**
+     * @var \Ratchet\App
+     */
     protected $app;
 
+    /**
+     * @var string
+     */
     protected $route;
 
     public function __construct(string $httpHost = 'localhost', $port = 8080, string $route = '/')

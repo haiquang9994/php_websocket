@@ -3,6 +3,12 @@
 composer require lpks/php-websocket
 ```
 
+Script file in example folder.
+
+
+# Description
+WebSocket Server like SocketIO for PHP.
+
 # Server
 ```php
 use PHPWebsocket\Core\Socket;

@@ -4,6 +4,9 @@ namespace PHPWebsocket\Core;
 
 class SocketTo
 {
+    /**
+     * @var Socket|null
+     */
     protected $socket;
 
     public function setSocket($socket)

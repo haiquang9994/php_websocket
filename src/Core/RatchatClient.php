@@ -8,8 +8,14 @@ use Ratchet\MessageComponentInterface;
 
 class RatchatClient implements MessageComponentInterface
 {
+    /**
+     * @var callable
+     */
     protected $callback;
 
+    /**
+     * @var array
+     */
     protected $sockets = [];
 
     public function __construct(callable $callback)
@@ -56,7 +62,7 @@ class RatchatClient implements MessageComponentInterface
         $conn->close();
     }
 
-    protected function getSocketId($conn)
+    protected function getSocketId($conn): string
     {
         $query_string = $conn->httpRequest->getUri()->getQuery();
         $queries = array_map(function ($item) {
@@ -68,7 +74,7 @@ class RatchatClient implements MessageComponentInterface
         return isset($sid[0][1]) ? $sid[0][1] : md5(date('d-m-Y-H-s-i') . rand() . rand());
     }
 
-    public function sockets()
+    public function sockets(): array
     {
         return $this->sockets;
     }
