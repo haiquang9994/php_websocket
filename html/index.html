@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="vue_app">
+        <template>
+            <div class="messages" id="messages">
+                <div class="message" v-for="message in messages">
+                    <div class="name">{{ message.sender }}: </div>
+                    <div class="content">{{ message.message }}</div>
+                </div>
+            </div>
+            <div class="input_area">
+                <input type="text" v-model="new_message" @keydown.enter="send" id="input">
+                <button @click="send">Send</button>
+            </div>
+        </template>
+    </div>
+    <script src="socket.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <script>
+        var messages = []
+        var socket = new WSClient('http://localhost:7508')
+        socket.emit('messages', null, (data) => {
+            data.messages.forEach(message => {
+                messages.push(message)
+            })
+            setTimeout(scroll)
+        })
+        socket.on('chat', ({ message, sender }) => {
+            messages.push({
+                sender,
+                message,
+            })
+            setTimeout(scroll)
+        })
+        function scroll() {
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight
+        }
+        function focus() {
+            document.getElementById('input').focus()
+        }
+        new Vue({
+            el: '#vue_app',
+            data() {
+                return {
+                    messages,
+                    new_message: '',
+                }
+            },
+            created() {
+                let vm = this
+
+            },
+            methods: {
+                send() {
+                    if (this.new_message) {
+                        socket.emit('chat', {
+                            message: this.new_message
+                        }, (data) => {
+                            console.log(data)
+                        })
+                        messages.push({
+                            sender: socket.id,
+                            message: this.new_message,
+                        })
+                        this.new_message = ''
+                        setTimeout(scroll)
+                        focus()
+                    }
+                }
+            },
+            mounted() {
+                setTimeout(scroll)
+            }
+        })
+    </script>
+</body>
+
+</html>

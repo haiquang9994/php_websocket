@@ -19,11 +19,41 @@ class RatchatClient implements MessageComponentInterface
 
     public function onOpen(ConnectionInterface $conn)
     {
-        if ($id = $this->getSocketId($conn)) {
-            $socket = new Socket($conn, $this, $id);
-            $this->sockets[$id] = $socket;
-            call_user_func($this->callback, $socket);
+        $conn->socket_id = $this->getSocketId($conn);
+        $socket = new Socket($conn, $this);
+        $this->sockets[$conn->socket_id] = $socket;
+        call_user_func($this->callback, $socket);
+    }
+
+    public function onMessage(ConnectionInterface $conn, $msg)
+    {
+        $message = json_decode($msg, true);
+        list($count, $name, $data) = $message;
+        $id = $conn->socket_id;
+        if ($name && $id) {
+            if ($socket = $this->sockets[$id]) {
+                $events = $socket->events();
+                $callbacks = $events[$name] ?? [];
+                foreach ($callbacks as $callback) {
+                    $result = call_user_func($callback, $data, $socket);
+                    if ($result !== null) {
+                        $socket->reply($count, $result);
+                    }
+                }
+            }
         }
+    }
+
+    public function onClose(ConnectionInterface $conn)
+    {
+        if ($id = $conn->socket_id) {
+            unset($this->sockets[$id]);
+        }
+    }
+
+    public function onError(ConnectionInterface $conn, Exception $e)
+    {
+        $conn->close();
     }
 
     protected function getSocketId($conn)
@@ -32,38 +62,10 @@ class RatchatClient implements MessageComponentInterface
         $queries = array_map(function ($item) {
             return explode('=', $item);
         }, explode('&', $query_string));
-        $sid = array_filter($queries, function ($item) {
+        $sid = array_values(array_filter($queries, function ($item) {
             return $item[0] === 'sid';
-        })[0] ?? null;
-        return $sid ? $sid[1] : null;
-    }
-
-    public function onMessage(ConnectionInterface $from, $msg)
-    {
-        $message = json_decode($msg, true);
-        $name = $message['name'] ?? null;
-        $id = $this->getSocketId($from);
-        if ($name && $id) {
-            if ($socket = $this->sockets[$id]) {
-                $events = $socket->events();
-                $callbacks = $events[$name] ?? [];
-                $data = $message['data'] ?? null;
-                foreach ($callbacks as $callback) {
-                    call_user_func($callback, $data, $socket);
-                }
-            }
-        }
-    }
-
-    public function onClose(ConnectionInterface $conn)
-    {
-        $id = $this->getSocketId($conn);
-        unset($this->sockets[$id]);
-    }
-
-    public function onError(ConnectionInterface $conn, Exception $e)
-    {
-        $conn->close();
+        }));
+        return isset($sid[0][1]) ? $sid[0][1] : md5(date('d-m-Y-H-s-i') . rand() . rand());
     }
 
     public function sockets()

@@ -1,0 +1,49 @@
+#vue_app {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.input_area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    display: flex;
+}
+
+.input_area input {
+    width: 100%;
+    padding: 0 10px;
+}
+
+.input_area button {
+    min-width: 100px;
+}
+
+.messages {
+    padding: 5px;
+    background-color: cadetblue;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 50px;
+    overflow-y: auto;
+}
+
+.messages .message {
+    margin-bottom: 10px;
+}
+
+.messages .message .name {
+    font-weight: bold;
+    display: inline;
+}
+
+.messages .message .content {
+    display: inline;
+}

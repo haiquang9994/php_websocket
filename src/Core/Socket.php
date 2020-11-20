@@ -6,23 +6,21 @@ use Ratchet\ConnectionInterface;
 
 class Socket
 {
-    protected $id;
     protected $conn;
     protected $client;
     protected $events = [];
     protected $broadcast;
 
-    public function __construct(ConnectionInterface $conn, RatchatClient $client, string $id)
+    public function __construct(ConnectionInterface $conn, RatchatClient $client)
     {
         $this->conn = $conn;
         $this->client = $client;
-        $this->id = $id;
         $this->broadcast = new Broadcast($client, $this);
     }
 
     public function id()
     {
-        return $this->id;
+        return $this->conn->socket_id;
     }
 
     public function on(string $name, callable $callback)
@@ -45,10 +43,12 @@ class Socket
 
     public function emit(string $name, $data)
     {
-        $this->conn->send(json_encode([
-            'name' => $name,
-            'data' => $data,
-        ]));
+        $this->conn->send(json_encode([null, $name, $data]));
+    }
+
+    public function reply($length, $result)
+    {
+        $this->conn->send(json_encode([$length, $result]));
     }
 
     public function events()
