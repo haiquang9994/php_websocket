@@ -5,8 +5,7 @@ use PHPWebsocket\Server;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-
-$app = new Server('localhost', 7508, '/');
+$server = new Server('127.0.0.1', 7508);
 
 $messages = [];
 
@@ -22,7 +21,7 @@ function pushMessage($message)
     $messages[] = $message;
 }
 
-$app->onConnect(function (Socket $socket) {
+$server->onConnect(function (Socket $socket) {
     $socket->on('chat', function ($data, Socket $socket) {
         pushMessage([
             'message' => $data['message'],
@@ -37,4 +36,6 @@ $app->onConnect(function (Socket $socket) {
     $socket->on('messages', function ($data, Socket $socket) {
         return ['messages' => getMessages()];
     });
+}, function (Server $server) {
+    echo "Listening on {$server->getAddress()}:{$server->getPort()}\n";
 });

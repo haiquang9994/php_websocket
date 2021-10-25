@@ -3,30 +3,46 @@
 namespace PHPWebsocket;
 
 use PHPWebsocket\Core\RatchatClient;
-use Ratchet\App;
+use Ratchet\Http\HttpServer;
+use Ratchet\Server\IoServer;
+use Ratchet\WebSocket\WsServer;
 
 class Server
 {
-    /**
-     * @var \Ratchet\App
-     */
-    protected $app;
+    protected $address;
 
-    /**
-     * @var string
-     */
-    protected $route;
+    protected $port;
 
-    public function __construct(string $httpHost = 'localhost', $port = 8080, string $route = '/')
+    public function __construct($address = '0.0.0.0', $port = 8080)
     {
-        $this->app = new App($httpHost, $port);
-        $this->route = $route;
+        $this->address = $address;
+        $this->port = $port;
     }
 
-    public function onConnect(callable $runner)
+    public function getAddress()
     {
-        $client = new RatchatClient($runner);
-        $this->app->route($this->route, $client, ['*']);
-        $this->app->run();
+        return $this->address;
+    }
+
+    public function getPort()
+    {
+        return $this->port;
+    }
+
+    public function onConnect(callable $runner, callable $callback = null)
+    {
+        IoServer::factory(
+            new HttpServer(
+                new WsServer(
+                    new RatchatClient($runner, function () use ($callback) {
+                        if (is_callable($callback)) {
+                            call_user_func($callback, $this);
+                        }
+                    })
+                )
+            ),
+            $this->port,
+            $this->address,
+        )->run();
     }
 }
