@@ -64,4 +64,9 @@ class Socket
     {
         return $this->events;
     }
+
+    public function getConnection()
+    {
+        return $this->conn;
+    }
 }
