@@ -32,6 +32,15 @@ class RatchatClient implements MessageComponentInterface
         }
     }
 
+    protected function find($id): ?Socket
+    {
+        $socket = $this->sockets[$id] ?? null;
+        if ($socket instanceof Socket) {
+            return $socket;
+        }
+        return null;
+    }
+
     public function onOpen(ConnectionInterface $conn)
     {
         $conn->socket_id = $this->getSocketId($conn);
@@ -43,10 +52,16 @@ class RatchatClient implements MessageComponentInterface
     public function onMessage(ConnectionInterface $conn, $msg)
     {
         $message = json_decode($msg, true);
+        if (!is_array($message)) {
+            if (is_numeric($message)) {
+                $conn->send($message);
+            }
+            return;
+        }
         list($count, $name, $data) = $message;
         $id = $conn->socket_id;
         if ($name && $id) {
-            if ($socket = $this->sockets[$id]) {
+            if ($socket = $this->find($id)) {
                 $events = $socket->events();
                 $callbacks = $events[$name] ?? [];
                 foreach ($callbacks as $callback) {
