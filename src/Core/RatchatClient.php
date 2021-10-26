@@ -11,17 +11,25 @@ class RatchatClient implements MessageComponentInterface
     /**
      * @var callable
      */
-    protected $runner;
+    protected $onConnect;
+
+    /**
+     * @var callable
+     */
+    protected $onClose;
 
     /**
      * @var array
      */
     protected $sockets = [];
 
-    public function __construct(callable $runner, callable $callback)
+    public function __construct(callable $onConnect, callable $onClose = null, callable $callback = null)
     {
-        $this->runner = $runner;
-        call_user_func($callback);
+        $this->onConnect = $onConnect;
+        $this->onClose = $onClose;
+        if (is_callable($callback)) {
+            call_user_func($callback);
+        }
     }
 
     public function onOpen(ConnectionInterface $conn)
@@ -29,7 +37,7 @@ class RatchatClient implements MessageComponentInterface
         $conn->socket_id = $this->getSocketId($conn);
         $socket = new Socket($conn, $this);
         $this->sockets[$conn->socket_id] = $socket;
-        call_user_func($this->runner, $socket);
+        call_user_func($this->onConnect, $socket);
     }
 
     public function onMessage(ConnectionInterface $conn, $msg)
@@ -55,6 +63,10 @@ class RatchatClient implements MessageComponentInterface
     {
         if ($id = $conn->socket_id) {
             unset($this->sockets[$id]);
+        }
+        if (is_callable($this->onClose)) {
+            $socket = new Socket($conn, $this);
+            call_user_func($this->onClose, $socket);
         }
     }
 

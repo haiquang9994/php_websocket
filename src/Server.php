@@ -31,14 +31,15 @@ class Server
 
     public function onConnect(callable $runner, callable $callback = null)
     {
+        return $this->run($runner, null, $callback);
+    }
+
+    public function run(callable $onConnect = null, callable $onClose = null, callable $callback = null)
+    {
         IoServer::factory(
             new HttpServer(
                 new WsServer(
-                    new RatchatClient($runner, function () use ($callback) {
-                        if (is_callable($callback)) {
-                            call_user_func($callback, $this);
-                        }
-                    })
+                    new RatchatClient($onConnect, $onClose, $callback)
                 )
             ),
             $this->port,
