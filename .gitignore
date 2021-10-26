@@ -1,3 +1,6 @@
 vendor
 ecosystem.config.js
 composer.lock
+js/node_modules
+js/dist
+js/yarn.lock
