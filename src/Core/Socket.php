@@ -21,10 +21,16 @@ class Socket
      */
     protected $broadcast;
 
+    /**
+     * @var RatchatClient
+     */
+    protected $client;
+
     public function __construct(ConnectionInterface $conn, RatchatClient $client)
     {
         $this->conn = $conn;
         $this->broadcast = new Broadcast($client, $this);
+        $this->client = $client;
     }
 
     public function id(): string
@@ -68,5 +74,10 @@ class Socket
     public function getConnection()
     {
         return $this->conn;
+    }
+
+    public function client()
+    {
+        return $this->client;
     }
 }
