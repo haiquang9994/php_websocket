@@ -9,8 +9,19 @@ use Ratchet\WebSocket\WsServer;
 
 class Server
 {
+    /**
+     * @var string
+     */
     protected $address;
+
+    /**
+     * @var int
+     */
     protected $port;
+
+    /**
+     * @var bool
+     */
     protected $binary;
 
     public function __construct($address = '127.0.0.1', $port = 8080, bool $binary = false)

@@ -28,6 +28,9 @@ class Socket
      */
     protected $client;
 
+    /**
+     * @var bool
+     */
     protected $binary;
 
     public function __construct(ConnectionInterface $conn, RatchatClient $client, bool $binary = false)

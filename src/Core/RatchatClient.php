@@ -25,6 +25,9 @@ class RatchatClient implements MessageComponentInterface
      */
     protected $sockets = [];
 
+    /**
+     * @var bool
+     */
     protected $binary;
 
     public function __construct(callable $onConnect, callable $onClose = null, callable $callback = null, bool $binary = false)
@@ -54,21 +57,16 @@ class RatchatClient implements MessageComponentInterface
         call_user_func($this->onConnect, $socket);
     }
 
-    protected function sendBinary($message)
-    {
-        $binaryMsg = new Message();
-        $frame = new Frame($message, true, Frame::OP_BINARY);
-        $binaryMsg->addFrame($frame);
-        $this->conn->send($binaryMsg);
-    }
-
     public function onMessage(ConnectionInterface $conn, $msg)
     {
-        $message = json_decode($msg, true);
+        $message = @json_decode($msg, true);
         if (!is_array($message)) {
             if (is_numeric($message)) {
                 if ($this->binary) {
-                    $this->sendBinary(json_encode($message));
+                    $binaryMsg = new Message();
+                    $frame = new Frame($message, true, Frame::OP_BINARY);
+                    $binaryMsg->addFrame($frame);
+                    $conn->send($binaryMsg);
                 } else {
                     $conn->send($message);
                 }
