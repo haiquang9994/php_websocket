@@ -10,13 +10,14 @@ use Ratchet\WebSocket\WsServer;
 class Server
 {
     protected $address;
-
     protected $port;
+    protected $binary;
 
-    public function __construct($address = '0.0.0.0', $port = 8080)
+    public function __construct($address = '127.0.0.1', $port = 8080, bool $binary = false)
     {
         $this->address = $address;
         $this->port = $port;
+        $this->binary = $binary;
     }
 
     public function getAddress()
@@ -39,7 +40,7 @@ class Server
         IoServer::factory(
             new HttpServer(
                 new WsServer(
-                    new RatchatClient($onConnect, $onClose, $callback)
+                    new RatchatClient($onConnect, $onClose, $callback, $this->binary)
                 )
             ),
             $this->port,

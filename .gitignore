@@ -4,3 +4,4 @@ composer.lock
 js/node_modules
 js/dist
 js/yarn.lock
+.prettierrc.json

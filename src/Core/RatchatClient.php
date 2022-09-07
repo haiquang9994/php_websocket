@@ -5,6 +5,8 @@ namespace PHPWebsocket\Core;
 use Exception;
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
+use Ratchet\RFC6455\Messaging\Frame;
+use Ratchet\RFC6455\Messaging\Message;
 
 class RatchatClient implements MessageComponentInterface
 {
@@ -23,10 +25,13 @@ class RatchatClient implements MessageComponentInterface
      */
     protected $sockets = [];
 
-    public function __construct(callable $onConnect, callable $onClose = null, callable $callback = null)
+    protected $binary;
+
+    public function __construct(callable $onConnect, callable $onClose = null, callable $callback = null, bool $binary = false)
     {
         $this->onConnect = $onConnect;
         $this->onClose = $onClose;
+        $this->binary = $binary;
         if (is_callable($callback)) {
             call_user_func($callback);
         }
@@ -44,9 +49,17 @@ class RatchatClient implements MessageComponentInterface
     public function onOpen(ConnectionInterface $conn)
     {
         $conn->socket_id = $this->getSocketId($conn);
-        $socket = new Socket($conn, $this);
+        $socket = new Socket($conn, $this, $this->binary);
         $this->sockets[$conn->socket_id] = $socket;
         call_user_func($this->onConnect, $socket);
+    }
+
+    protected function sendBinary($message)
+    {
+        $binaryMsg = new Message();
+        $frame = new Frame($message, true, Frame::OP_BINARY);
+        $binaryMsg->addFrame($frame);
+        $this->conn->send($binaryMsg);
     }
 
     public function onMessage(ConnectionInterface $conn, $msg)
@@ -54,7 +67,11 @@ class RatchatClient implements MessageComponentInterface
         $message = json_decode($msg, true);
         if (!is_array($message)) {
             if (is_numeric($message)) {
-                $conn->send($message);
+                if ($this->binary) {
+                    $this->sendBinary(json_encode($message));
+                } else {
+                    $conn->send($message);
+                }
             }
             return;
         }

@@ -3,6 +3,8 @@
 namespace PHPWebsocket\Core;
 
 use Ratchet\ConnectionInterface;
+use Ratchet\RFC6455\Messaging\Frame;
+use Ratchet\RFC6455\Messaging\Message;
 
 class Socket
 {
@@ -26,11 +28,14 @@ class Socket
      */
     protected $client;
 
-    public function __construct(ConnectionInterface $conn, RatchatClient $client)
+    protected $binary;
+
+    public function __construct(ConnectionInterface $conn, RatchatClient $client, bool $binary = false)
     {
         $this->conn = $conn;
         $this->broadcast = new Broadcast($client, $this);
         $this->client = $client;
+        $this->binary = $binary;
     }
 
     public function id(): string
@@ -56,14 +61,30 @@ class Socket
         return $this->broadcast->to($toId);
     }
 
+    protected function sendBinary($message)
+    {
+        $binaryMsg = new Message();
+        $frame = new Frame($message, true, Frame::OP_BINARY);
+        $binaryMsg->addFrame($frame);
+        $this->conn->send($binaryMsg);
+    }
+
     public function emit(string $name, $data)
     {
-        $this->conn->send(json_encode([null, $name, $data]));
+        if ($this->binary) {
+            $this->sendBinary(json_encode([null, $name, $data]));
+        } else {
+            $this->conn->send(json_encode([null, $name, $data]));
+        }
     }
 
     public function reply($length, $result)
     {
-        $this->conn->send(json_encode([$length, $result]));
+        if ($this->binary) {
+            $this->sendBinary(json_encode([$length, $result]));
+        } else {
+            $this->conn->send(json_encode([$length, $result]));
+        }
     }
 
     public function events(): array

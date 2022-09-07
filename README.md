@@ -17,7 +17,7 @@ use PHPWebsocket\Server;
 require 'vendor/autoload.php';
 
 
-$server = new Server('127.0.0.1', 7508);
+$server = new Server('127.0.0.1', 7508, true);
 
 $messages = [];
 
@@ -33,7 +33,8 @@ function pushMessage($message)
     $messages[] = $message;
 }
 
-$server->onConnect(function (Socket $socket) {
+$server->run(function (Socket $socket) {
+    echo "Connected: {$socket->id()}\n";
     $socket->on('chat', function ($data, Socket $socket) {
         pushMessage([
             'message' => $data['message'],
@@ -48,12 +49,16 @@ $server->onConnect(function (Socket $socket) {
     $socket->on('messages', function ($data, Socket $socket) {
         return ['messages' => getMessages()];
     });
+}, function (Socket $socket) {
+    echo "Disconnected: {$socket->id()}\n";
+}, function () use ($server) {
+    echo "Listening on {$server->getAddress()}:{$server->getPort()}\n";
 });
 ```
 
 # Client with js
 ```js
-var socket = new WSClient('http://127.0.0.1:7508')
+var socket = new WSClient('http://127.0.0.1:7508', true)
 
 socket.emit('messages', {}, ({ messages }) => {
     console.log(messages)

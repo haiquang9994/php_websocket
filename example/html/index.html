@@ -26,7 +26,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
     <script>
         var messages = []
-        var socket = new WSClient('http://localhost:7508')
+        var socket = new WSClient('http://localhost:7508', true)
         socket.emit('messages', null, (data) => {
             data.messages.forEach(message => {
                 messages.push(message)
