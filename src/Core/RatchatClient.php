@@ -63,10 +63,11 @@ class RatchatClient implements MessageComponentInterface
     {
         $message = @json_decode($msg, true);
         if (!is_array($message)) {
-            return $this->handlePingMessage($conn, $message);
+            $this->handlePingMessage($conn, $message);
+            return;
         }
         list($count, $name, $data) = $message;
-        return $this->handleMessage($conn, $count, $name, $data);
+        $this->handleMessage($conn, $count, $name, $data);
     }
 
     protected function handlePingMessage(ConnectionInterface $conn, $message)
