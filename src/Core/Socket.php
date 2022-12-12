@@ -86,11 +86,6 @@ class Socket
         }
     }
 
-    public function setCount($count)
-    {
-        $this->count = $count;
-    }
-
     public function reply($data, $count = null)
     {
         if ($count === null) {
@@ -116,5 +111,10 @@ class Socket
     public function client()
     {
         return $this->client;
+    }
+
+    public function setCount($count)
+    {
+        $this->count = $count;
     }
 }
