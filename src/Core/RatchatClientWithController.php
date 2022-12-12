@@ -8,7 +8,7 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\RFC6455\Messaging\Frame;
 use Ratchet\RFC6455\Messaging\Message;
 
-class RatchatClient implements MessageComponentInterface, RatchatClientInterface
+class RatchatClientWithController implements MessageComponentInterface, RatchatClientInterface
 {
     /**
      * @var callable
@@ -30,8 +30,14 @@ class RatchatClient implements MessageComponentInterface, RatchatClientInterface
      */
     protected $binary;
 
-    public function __construct(callable $onConnect, callable $onClose = null, callable $callback = null, bool $binary = false)
+    /**
+     * @var Controller
+     */
+    protected $controller;
+
+    public function __construct(Controller $controller, callable $onConnect, callable $onClose = null, callable $callback = null, bool $binary = false)
     {
+        $this->controller = $controller;
         $this->onConnect = $onConnect;
         $this->onClose = $onClose;
         $this->binary = $binary;
@@ -54,7 +60,8 @@ class RatchatClient implements MessageComponentInterface, RatchatClientInterface
         $conn->socket_id = $this->getSocketId($conn);
         $socket = new Socket($conn, $this, $this->binary);
         $this->sockets[$conn->socket_id] = $socket;
-        if (is_callable($this->onConnect)) {
+        $wsMessageType = $conn->httpRequest->getHeaderLine('WSMessageType');
+        if ($wsMessageType !== 'ControllerProcess' && is_callable($this->onConnect)) {
             call_user_func($this->onConnect, $socket);
         }
     }
@@ -76,19 +83,32 @@ class RatchatClient implements MessageComponentInterface, RatchatClientInterface
             return;
         }
         list($count, $name, $data) = $message;
-        $id = $conn->socket_id;
-        if ($name && $id) {
-            if ($socket = $this->find($id)) {
-                $events = $socket->events();
-                $callbacks = $events[$name] ?? [];
-                foreach ($callbacks as $callback) {
-                    $result = call_user_func($callback, $data, $socket);
-                    if ($result !== null) {
-                        $socket->reply($count, $result);
-                    }
+        if ($name === '::controller:self:reply') {
+            if (is_array($data)) {
+                $socket_id = $data['socket_id'] ?? null;
+                $count = $data['count'] ?? null;
+                $result = $data['result'] ?? null;
+                $socket = $this->find($socket_id);
+                if ($count !== null && $socket) {
+                    $socket->reply($count, $result);
                 }
             }
+            return;
         }
+        if ($name === '::controller:broadcast:emit') {
+            if (is_array($data)) {
+                $socket_id = $data['socket_id'] ?? null;
+                $name = $data['name'] ?? null;
+                $data = $data['data'] ?? null;
+                $socket = $this->find($socket_id);
+                if ($name && $socket) {
+                    $socket->broadcast()->emit($name, $data);
+                }
+            }
+            return;
+        }
+        $socket_id = $conn->socket_id;
+        $this->controller->process($socket_id, $count, $name, $data);
     }
 
     public function onClose(ConnectionInterface $conn)
@@ -96,7 +116,8 @@ class RatchatClient implements MessageComponentInterface, RatchatClientInterface
         if ($id = $conn->socket_id) {
             unset($this->sockets[$id]);
         }
-        if (is_callable($this->onClose)) {
+        $wsMessageType = $conn->httpRequest->getHeaderLine('WSMessageType');
+        if ($wsMessageType !== 'ControllerProcess' && is_callable($this->onClose)) {
             $socket = new Socket($conn, $this);
             call_user_func($this->onClose, $socket);
         }

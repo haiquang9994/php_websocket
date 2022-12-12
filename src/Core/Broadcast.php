@@ -5,7 +5,7 @@ namespace PHPWebsocket\Core;
 class Broadcast
 {
     /**
-     * @var RatchatClient
+     * @var RatchatClientInterface
      */
     protected $client;
 
@@ -14,7 +14,7 @@ class Broadcast
      */
     protected $socket;
 
-    public function __construct(RatchatClient $client, Socket $socket)
+    public function __construct(RatchatClientInterface $client, Socket $socket)
     {
         $this->client = $client;
         $this->socket = $socket;

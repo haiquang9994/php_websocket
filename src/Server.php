@@ -2,7 +2,9 @@
 
 namespace PHPWebsocket;
 
+use PHPWebsocket\Core\Controller;
 use PHPWebsocket\Core\RatchatClient;
+use PHPWebsocket\Core\RatchatClientWithController;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
@@ -52,6 +54,22 @@ class Server
             new HttpServer(
                 new WsServer(
                     new RatchatClient($onConnect, $onClose, $callback, $this->binary)
+                )
+            ),
+            $this->port,
+            $this->address,
+        )->run();
+    }
+
+    public function runWithController(Controller $controller, callable $onConnect = null, callable $onClose = null, callable $callback = null)
+    {
+        $controller->setAddress($this->address);
+        $controller->setPort($this->port);
+
+        IoServer::factory(
+            new HttpServer(
+                new WsServer(
+                    new RatchatClientWithController($controller, $onConnect, $onClose, $callback, $this->binary)
                 )
             ),
             $this->port,

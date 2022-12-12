@@ -24,7 +24,7 @@ class Socket
     protected $broadcast;
 
     /**
-     * @var RatchatClient
+     * @var RatchatClientInterface
      */
     protected $client;
 
@@ -33,7 +33,7 @@ class Socket
      */
     protected $binary;
 
-    public function __construct(ConnectionInterface $conn, RatchatClient $client, bool $binary = false)
+    public function __construct(ConnectionInterface $conn, RatchatClientInterface $client, bool $binary = false)
     {
         $this->conn = $conn;
         $this->broadcast = new Broadcast($client, $this);

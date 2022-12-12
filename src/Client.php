@@ -34,10 +34,10 @@ class Client
         return $this->secure;
     }
 
-    public function send(string $eventName, array $data = [], callable $callback = null)
+    public function send(string $eventName, array $data = [], callable $callback = null, array $subProtocols = [], array $headers = [])
     {
         $url = sprintf("%s://%s:%s", $this->secure ? 'wss' : 'ws', $this->address, $this->port);
-        connect($url)->then(function ($conn) use ($eventName, $data, $callback) {
+        connect($url, $subProtocols, $headers)->then(function ($conn) use ($eventName, $data, $callback) {
             $conn->on('message', function ($msg) use ($callback, $conn) {
                 if (is_callable($callback)) {
                     $data = json_decode($msg, true);
