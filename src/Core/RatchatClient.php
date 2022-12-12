@@ -59,6 +59,16 @@ class RatchatClient implements MessageComponentInterface
         }
     }
 
+    public function onMessage(ConnectionInterface $conn, $msg)
+    {
+        $message = @json_decode($msg, true);
+        if (!is_array($message)) {
+            return $this->handlePingMessage($conn, $message);
+        }
+        list($count, $name, $data) = $message;
+        return $this->handleMessage($conn, $count, $name, $data);
+    }
+
     protected function handlePingMessage(ConnectionInterface $conn, $message)
     {
         if (is_numeric($message)) {
@@ -88,16 +98,6 @@ class RatchatClient implements MessageComponentInterface
                 }
             }
         }
-    }
-
-    public function onMessage(ConnectionInterface $conn, $msg)
-    {
-        $message = @json_decode($msg, true);
-        if (!is_array($message)) {
-            return $this->handlePingMessage($conn, $message);
-        }
-        list($count, $name, $data) = $message;
-        return $this->handleMessage($conn, $count, $name, $data);
     }
 
     public function onClose(ConnectionInterface $conn)
