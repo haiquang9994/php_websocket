@@ -33,6 +33,20 @@ class Handler
         ]);
     }
 
+    public function emit($to, $name, $data)
+    {
+        $to_ids = is_array($to) ? $to : [$to];
+        $client = new Client($this->host, $this->port);
+        $client->send("::controller:self:emit", [
+            'socket_id' => $this->socket_id,
+            'to_ids' => $to_ids,
+            'name' => $name,
+            'data' => $data,
+        ], null, [], [
+            'WSMessageType' => 'ControllerProcess',
+        ]);
+    }
+
     public function process()
     {
         global $argv;
