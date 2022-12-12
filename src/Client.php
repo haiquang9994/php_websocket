@@ -6,10 +6,19 @@ use function Ratchet\Client\connect;
 
 class Client
 {
+    /**
+     * @var string
+     */
     protected $address;
 
+    /**
+     * @var int
+     */
     protected $port;
 
+    /**
+     * @var bool
+     */
     protected $secure;
 
     public function __construct($address = '0.0.0.0', $port = 8080, $secure = false)

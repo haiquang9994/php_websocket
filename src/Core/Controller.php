@@ -4,12 +4,24 @@ namespace PHPWebsocket\Core;
 
 class Controller
 {
+    /**
+     * @var string
+     */
     protected $php;
 
+    /**
+     * @var string
+     */
     protected $handlerPath;
 
+    /**
+     * @var string
+     */
     protected $address;
 
+    /**
+     * @var int
+     */
     protected $port;
 
     public function __construct(string $php, string $handlerPath)
