@@ -8,7 +8,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $server = new Server('127.0.0.1', 7508, true);
 
-$controller = new Controller("/opt/homebrew/opt/php@7.4/bin/php", __DIR__ . "/handler.php");
+$php = "php"; # path to your php
+$controller = new Controller($php, __DIR__ . "/handler.php");
 
 $server->runWithController(
     $controller,
