@@ -8,7 +8,7 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\RFC6455\Messaging\Frame;
 use Ratchet\RFC6455\Messaging\Message;
 
-class RatchatClient implements MessageComponentInterface, RatchatClientInterface
+class RatchatClient implements MessageComponentInterface
 {
     /**
      * @var callable
@@ -59,36 +59,45 @@ class RatchatClient implements MessageComponentInterface, RatchatClientInterface
         }
     }
 
-    public function onMessage(ConnectionInterface $conn, $msg)
+    protected function handlePingMessage(ConnectionInterface $conn, $message)
     {
-        $message = @json_decode($msg, true);
-        if (!is_array($message)) {
-            if (is_numeric($message)) {
-                if ($this->binary) {
-                    $binaryMsg = new Message();
-                    $frame = new Frame($message, true, Frame::OP_BINARY);
-                    $binaryMsg->addFrame($frame);
-                    $conn->send($binaryMsg);
-                } else {
-                    $conn->send($message);
-                }
+        if (is_numeric($message)) {
+            if ($this->binary) {
+                $binaryMsg = new Message();
+                $frame = new Frame($message, true, Frame::OP_BINARY);
+                $binaryMsg->addFrame($frame);
+                $conn->send($binaryMsg);
+            } else {
+                $conn->send($message);
             }
-            return;
         }
-        list($count, $name, $data) = $message;
-        $id = $conn->socket_id;
-        if ($name && $id) {
-            if ($socket = $this->find($id)) {
+    }
+
+    protected function handleMessage(ConnectionInterface $conn, $count, $name, $data)
+    {
+        if ($name && $conn->socket_id) {
+            if ($socket = $this->find($conn->socket_id)) {
+                $socket->setCount($count);
                 $events = $socket->events();
                 $callbacks = $events[$name] ?? [];
                 foreach ($callbacks as $callback) {
                     $result = call_user_func($callback, $data, $socket);
                     if ($result !== null) {
-                        $socket->reply($count, $result);
+                        $socket->reply($result, $count);
                     }
                 }
             }
         }
+    }
+
+    public function onMessage(ConnectionInterface $conn, $msg)
+    {
+        $message = @json_decode($msg, true);
+        if (!is_array($message)) {
+            return $this->handlePingMessage($conn, $message);
+        }
+        list($count, $name, $data) = $message;
+        return $this->handleMessage($conn, $count, $name, $data);
     }
 
     public function onClose(ConnectionInterface $conn)

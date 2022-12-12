@@ -24,7 +24,7 @@ class Socket
     protected $broadcast;
 
     /**
-     * @var RatchatClientInterface
+     * @var RatchatClient
      */
     protected $client;
 
@@ -33,7 +33,12 @@ class Socket
      */
     protected $binary;
 
-    public function __construct(ConnectionInterface $conn, RatchatClientInterface $client, bool $binary = false)
+    /**
+     * @var int
+     */
+    protected $count = 0;
+
+    public function __construct(ConnectionInterface $conn, RatchatClient $client, bool $binary = false)
     {
         $this->conn = $conn;
         $this->broadcast = new Broadcast($client, $this);
@@ -81,12 +86,20 @@ class Socket
         }
     }
 
-    public function reply($length, $result)
+    public function setCount($count)
     {
+        $this->count = $count;
+    }
+
+    public function reply($data, $count = null)
+    {
+        if ($count === null) {
+            $count = $this->count;
+        }
         if ($this->binary) {
-            $this->sendBinary(json_encode([$length, $result]));
+            $this->sendBinary(json_encode([$count, $data]));
         } else {
-            $this->conn->send(json_encode([$length, $result]));
+            $this->conn->send(json_encode([$count, $data]));
         }
     }
 
