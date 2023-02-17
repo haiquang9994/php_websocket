@@ -108,7 +108,7 @@ class RatchatClient implements MessageComponentInterface
     public function onError(ConnectionInterface $conn, Exception $e)
     {
         if (is_callable($this->onErrorThrowing)) {
-            call_user_func($this->onErrorThrowing, $conn, $e);
+            call_user_func($this->onErrorThrowing, $e, $conn);
         } else {
             $conn->close();
         }
