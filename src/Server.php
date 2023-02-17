@@ -52,7 +52,9 @@ class Server
     public function run(callable $onConnect = null, callable $onClose = null, callable $callback = null, callable $onErrorThrowing = null)
     {
         $client = new RatchatClient($onConnect, $onClose, $callback, $this->binary);
-        $client->onErrorThrowing($onErrorThrowing);
+        if (is_callable($onErrorThrowing)) {
+            $client->onErrorThrowing($onErrorThrowing);
+        }
         IoServer::factory(new HttpServer(
             new WsServer($client)
         ), $this->port, $this->address,)->run();
