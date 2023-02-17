@@ -41,21 +41,20 @@ class Server
         return $this->port;
     }
 
+    /**
+     * @deprecated, use run instead
+     */
     public function onConnect(callable $runner, callable $callback = null)
     {
         return $this->run($runner, null, $callback);
     }
 
-    public function run(callable $onConnect = null, callable $onClose = null, callable $callback = null)
+    public function run(callable $onConnect = null, callable $onClose = null, callable $callback = null, callable $onErrorThrowing = null)
     {
-        IoServer::factory(
-            new HttpServer(
-                new WsServer(
-                    new RatchatClient($onConnect, $onClose, $callback, $this->binary)
-                )
-            ),
-            $this->port,
-            $this->address,
-        )->run();
+        $client = new RatchatClient($onConnect, $onClose, $callback, $this->binary);
+        $client->onErrorThrowing($onErrorThrowing);
+        IoServer::factory(new HttpServer(
+            new WsServer($client)
+        ), $this->port, $this->address,)->run();
     }
 }

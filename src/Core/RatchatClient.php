@@ -21,6 +21,11 @@ class RatchatClient implements MessageComponentInterface
     protected $onClose;
 
     /**
+     * @var callable
+     */
+    protected $onErrorThrowing;
+
+    /**
      * @var array
      */
     protected $sockets = [];
@@ -102,7 +107,11 @@ class RatchatClient implements MessageComponentInterface
 
     public function onError(ConnectionInterface $conn, Exception $e)
     {
-        $conn->close();
+        if (is_callable($this->onErrorThrowing)) {
+            call_user_func($this->onErrorThrowing, $conn, $e);
+        } else {
+            $conn->close();
+        }
     }
 
     protected function getSocketId($conn): string
@@ -120,5 +129,10 @@ class RatchatClient implements MessageComponentInterface
     public function sockets(): array
     {
         return $this->sockets;
+    }
+
+    public function onErrorThrowing(callable $callback)
+    {
+        $this->onErrorThrowing = $callback;
     }
 }
