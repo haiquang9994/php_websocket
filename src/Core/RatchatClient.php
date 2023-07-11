@@ -78,16 +78,16 @@ class RatchatClient implements MessageComponentInterface
             }
             return;
         }
-        list($count, $name, $data) = $message;
+        list($index, $name, $data) = $message;
         $id = $conn->socket_id;
         if ($name && $id) {
             if ($socket = $this->find($id)) {
                 $events = $socket->events();
                 $callbacks = $events[$name] ?? [];
                 foreach ($callbacks as $callback) {
-                    $result = call_user_func($callback, $data, $socket);
+                    $result = call_user_func($callback, $data, $socket, $index);
                     if ($result !== null) {
-                        $socket->reply($count, $result);
+                        $socket->reply($index, $result);
                     }
                 }
             }
