@@ -20,4 +20,11 @@ class SocketTo
             $this->socket->emit($name, $data);
         }
     }
+
+    public function reply($index, $result)
+    {
+        if ($this->socket instanceof Socket) {
+            $this->socket->reply($index, $result);
+        }
+    }
 }

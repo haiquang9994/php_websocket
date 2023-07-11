@@ -81,12 +81,12 @@ class Socket
         }
     }
 
-    public function reply($length, $result)
+    public function reply($index, $result)
     {
         if ($this->binary) {
-            $this->sendBinary(json_encode([$length, $result]));
+            $this->sendBinary(json_encode([$index, $result]));
         } else {
-            $this->conn->send(json_encode([$length, $result]));
+            $this->conn->send(json_encode([$index, $result]));
         }
     }
 
